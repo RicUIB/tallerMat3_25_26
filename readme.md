@@ -1,7 +1,7 @@
 ---
 title: "Readme. Taller datos Inside Airbnb"
-author: "Taller MAT3 GIN 24-25"
-date: "2024-11-15"
+author: "Taller MAT3 GIN 25-26"
+date: "2025-11-17"
 output: 
   html_document: 
     toc: true

@@ -1,6 +1,6 @@
 ---
 title: "Readme. Taller datos Inside Airbnb"
-author: "Taller MAT3 GIN 24-25"
+author: "Taller MAT3 GIN 25-26"
 date: "`r Sys.Date()`"
 output: 
   html_document: 
