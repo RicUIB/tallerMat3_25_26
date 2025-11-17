@@ -40,23 +40,73 @@ Se entrega en grupos que deben de estar constituidos en la actividad de grupos. 
 Leeremos los siguientes datos de la zona de etiqueta `mallorca` con el código siguiente:
 
 ```{r}
-load("clean_data/mallorca/listing_common0_select.RData")
+load("clean_data/mallorca/listing_common0.RData")
 ls()
-str(listings_common0_select)
+listings0 = listings_common0 %>%
+  select(id, scrape_id, listing_url,
+         neighbourhood_cleansed, price,
+         number_of_reviews,
+         review_scores_rating,
+         review_scores_rating,
+         review_scores_cleanliness,
+         review_scores_location,
+         review_scores_value,
+         number_of_reviews,
+         accommodates,
+         bathrooms_text,
+         bedrooms,
+         beds,
+         minimum_nights,
+         description,
+         latitude,
+         longitude,
+         property_type,
+         room_type)
 ```
+
+Hemos seleccionado las variables que nos parecen más interesantes y hemos guardado el objeto como `listings_common0_select.RData` en `clean_data/mallorca/`
+
 
 **listings**
 
-Hemos cargado el objeto `listings_common0_select` que contiene los datos de los 4 periodos de apartamentos de inside Airbnb de Mallorca con unas 15 ó 16 variables.
+Hemos cargado el objeto `listings0` que contiene los datos varios  periodos de apartamentos de inside Airbnb de Mallorca seleccionando cuantas variables nos parecen más interesantes.
+
+Separararemos la fecha del scrapping que es eb la que se observon el fichero y nos quedaremos con los apartamentos que aparecen en las 9 periodos scrapeados.
+
+```{r}
+listings0= listings0 %>% mutate(date=as.Date(substr(as.character(scrape_id),1,8),
+                                             format="%Y%m%d"),
+                                .after=id)
+```
+
+Ahora veamos la fechas de los sceapings y el número de veces que aparecen 
+ cada  apartamentos.
+
+
+
+```{r}
+table(listings0$date)
+```
+Hay 8 periodos de scrapping y vamos a quedarnos con los apartamentos que aparecen en todos los periodos
+
+
+Vemos que cada apartamento aparece 8 veces una por periodo.
+
+
+```{r}
+table(table(listings0$id))
+```
+
+
 
 Notemos que cada apartamento:
 
 -   queda identificado por id y por date que nos da el periodo en la que apareció el dato.
--   así que cada apartamento aparece 4 veces ya que hemos elegido solo los apartamentos que aparecen en las 4 muestras.
--   Las muestras son `r unique(listings_common0_select$date)`,
+-   así que cada apartamento aparece 8 veces ya que hemos elegido solo los apartamentos que aparecen en las 8 muestras.
+-   Las muestras son `r unique(listings0$date)`,
 
 ```{r}
-unique(listings_common0_select$date)
+unique(listings0$date)
 ```
 
 **reviews**
@@ -64,7 +114,7 @@ unique(listings_common0_select$date)
 Estos datos necesitan leerse de forma adecuada, las columnas 1, 2 y 4 deben ser de tipo `character` las otras son correctas
 
 ```{r}
-reviews=read_csv("data/mallorca/2023-12-17/reviews.csv.gz")
+reviews=read_csv("data/mallorca/2025-09-21/reviews.csv.gz")
 str(reviews)
 head(reviews)
 ```
@@ -74,7 +124,7 @@ head(reviews)
 Son dos columnas y la primera es una agrupación de municipios (están NA) y la segunda es el nombre del municipio
 
 ```{r}
-municipios=read_csv("data/mallorca/2023-12-17/neighbourhoods.csv")
+municipios=read_csv("data/mallorca/2025-09-21/neighbourhoods.csv")
 str(municipios)
 head(municipios)
 ```
@@ -88,7 +138,7 @@ library(sf)
 library(tmap)
 
 # Leer el archivo GeoJSON
-geojson_sf <- sf::st_read("data/mallorca/2024-09-13/neighbourhoods.geojson")
+geojson_sf <- sf::st_read("data/mallorca/2025-09-21/neighbourhoods.geojson")
 
 # Crear un mapa
 
@@ -105,7 +155,7 @@ Responder las siguientes preguntas con formato Rmarkdown (.Rmd) o quarto (.qmd) 
 
 ## Pregunta 1 (**1punto**)
 
-Del fichero con los datos de listings `listing_common0_select.RData` calcula los estadísticos descriptivos de las variable `price` y de la variable `number_of_reviews` agrupados por municipio y por periodo.
+Del fichero con los datos de listings `listings0` calcula los estadísticos descriptivos de las variable `price` y de la variable `number_of_reviews` agrupados por municipio y por periodo.
 
 Presenta los resultados con una tabla de kableExtra.
 
@@ -117,34 +167,63 @@ Pollença
 
 ## Pregunta 3 (**1punto**)
 
-Con los datos de `listings_common0_select` de todos los periodos, contrastar si la media del precio en Pollença es igual a la de Palma **contra** que es mayor que en Palma para los precios mayores que 50 euros y menores de 400. Construid la hipótesis nula y alternativa, calculad el $p$-valor y el intervalo de confianza asociado al contraste. Justifica técnicamente la conclusión del contraste.
+Con los datos de `listings0` de todos los periodos, contrastar si la media del precio en Alcudia es igual a la de Palma **contra** que es mayor que en Palma para los precios mayores que 50 euros y menores de 400. Construid la hipótesis nula y alternativa, calculad el $p$-valor y el intervalo de confianza asociado al contraste. Justifica técnicamente la conclusión del contraste.
 
 ## Pregunta 4 (**1punto**)
 
-Con los  datos de `listings_common0_select`, contrastar si las medias de los precios en Palma entre los periodos "2023-12-17" y "2024-03-23" son iguales contra que son menores en 2023. Construid la hipótesis nula y alternativa, calculad el $p$-valor y el intervalo de confianza asociado al contraste. Haced un diagrama de caja comparativo de los precios ~~por municipio~~  por periodo y coméntalo.
+Con los  datos de `listings0`, contrastar si las medias de los precios en Alcudia entre los periodos  2025-06-15 y   2025-09-21 son iguales contra que son menores en 2023. Construid la hipótesis nula y alternativa, calculad el $p$-valor y el intervalo de confianza asociado al contraste.
 
-## Pregunta 5 (**1punto**)
+Haced un diagrama de caja comparativo de los precios  en Alcudia  por periodo y coméntalo.
 
-Calcular la proporción de apartamentos de la muestra "2024-03-23" con media de valoración `review_scores_rating` mayor que 4 en Palma y en Pollença son iguales contra que son distintas. Construid un intervalo de confianza para la diferencia de proporciones.
+## Pregunta 5 (**1 punto**)
 
-## Pregunta 6 (**1punto**)
+Comparar con un bopxlot de las valoraciones medias `review_scores_rating` para Alcudia, Palma, Calvià y
+Pollença. Hacer el gráfico con ggplot2 y todo lujo de destalles.
 
-Calcular la proporción de apartamentos de los periodos "2023-12-17" y "2024-03-23" con media de valoración `review_scores_rating` mayor que 4 en Palma  ~~y en Pollença~~ son iguales contra que son distintas.
+
+## Pregunta 6 (**1 punto**)
+
+Calcular la proporción de apartamentos de la muestra "2025-09-21" con media de valoración `review_scores_rating` mayor que 4 en Alcudia y en Calvià son iguales contra que son distintas. Construid un intervalo de confianza para la diferencia de proporciones.
+
 
 ## Pregunta 7 (**1punto**)
 
-La [Zipf's law es una ley empírica](https://en.wikipedia.org/wiki/Zipf%27s_law#Word_frequencies_in_natural_languages) que dice que la frecuencia de las palabras en un texto es inversamente proporcional a su rango. Decidid si la ley se ajusta a los datos de la longitud de los comentarios de los apartamentos de la muestra "2023-12-17" de Palma. Para ello, haced un análisis de regresión lineal de la frecuencia de las longitudes de los comentarios de los apartamentos de Palma y el rango de las longitudes de los comentarios. Justificad la respuesta, estadísticamente y gráficamente.
+Calcular la proporción de apartamentos de los periodos 2025-06-15 y  2025-09-21  con media de valoración `review_scores_rating` mayor que 4 en Palma  y en Pollença son iguales contra que son distintas.
+
+### Pregunta 7 
+Agrupa las variables `review_scores_rating` y `review_scores_location` de `listings0` en 5 categorías cada una y construid una tabla de contingencia con las dos variables agrupadas. Agrupar de forma que no cruces de categorías vacías. Contratar si esta varibles son independientes con  un test $\chi^2$. 
+
+Buscan información sobre el coeficiente de contingencia de Carl Pearson, cacularlo desde  la salida de chisq.test interpretarlo  en esta caso
+
+
+```{r}
+table(cut(listings0$review_scores_rating,5),
+      cut(listings0$review_scores_location,5))
+```
+
+
+## Pregunta 8 (**2 puntos**)
+
+La [Zipf's law es una ley empírica](https://en.wikipedia.org/wiki/Zipf%27s_law#Word_frequencies_in_natural_languages) que dice que la frecuencia de las palabras en un texto es inversamente proporcional a su rango. Decidid si la ley se ajusta a los datos de la longitud de los comentarios de los apartamentos de la muestra "2025-09-21" Mallorca, haced lo mismo para description de `listings0`. Para ello, haced un análisis de regresión lineal de la frecuencia de las longitudes de los comentarios/descripciones de los apartamentos de Mallorca y el rango de las longitudes de los comentarios. Justificad la respuesta, estadísticamente y gráficamente.
 
 Como ayuda estudiar el siguiente código, utilizadlo y comentadlo.
 
 ```{r}
 library(stringr)
+# para las reseñas
 head(reviews)
 length_rewiews=stringr::str_count(reviews$comments,"\\w+")
-head(table(length_rewiews))
+barplot(table(length_rewiews))
+
+#para las descripciones
+length_description=stringr::str_count(listings0$description,"\\w+")
+barplot(table(length_description))
 ```
 
+Y ahora se calculan los rango os lo dejo para reviews par desctption lo haceís vosotros
+
 ```{r}
+
 aux=table(length_rewiews)
 head(aux)
 head(names(aux))

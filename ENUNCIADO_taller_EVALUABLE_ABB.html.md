@@ -41,73 +41,144 @@ Leeremos los siguientes datos de la zona de etiqueta `mallorca` con el código s
 ::: {.cell}
 
 ```{.r .cell-code}
-load("clean_data/mallorca/listing_common0_select.RData")
+load("clean_data/mallorca/listing_common0.RData")
 ls()
 ```
 
 ::: {.cell-output .cell-output-stdout}
 
 ```
-[1] "listings_common0_select"
+[1] "listings_common0"
 ```
 
 
 :::
 
 ```{.r .cell-code}
-str(listings_common0_select)
+listings0 = listings_common0 %>%
+  select(id, scrape_id, listing_url,
+         neighbourhood_cleansed, price,
+         number_of_reviews,
+         review_scores_rating,
+         review_scores_rating,
+         review_scores_cleanliness,
+         review_scores_location,
+         review_scores_value,
+         number_of_reviews,
+         accommodates,
+         bathrooms_text,
+         bedrooms,
+         beds,
+         minimum_nights,
+         description,
+         latitude,
+         longitude,
+         property_type,
+         room_type)
 ```
-
-::: {.cell-output .cell-output-stdout}
-
-```
-tibble [52,088 × 16] (S3: tbl_df/tbl/data.frame)
- $ date                  : Date[1:52088], format: "2023-12-17" "2023-12-17" ...
- $ id                    : chr [1:52088] "49752748" "935239498971961146" "24932587" "782518268756227225" ...
- $ price                 : num [1:52088] 2636 107 50 683 62 ...
- $ longitude             : num [1:52088] 2.71 3.12 2.62 3.21 3.24 ...
- $ latitude              : num [1:52088] 39.8 39.3 39.6 39.5 39.4 ...
- $ property_type         : chr [1:52088] "Entire home" "Entire home" "Entire rental unit" "Entire villa" ...
- $ room_type             : chr [1:52088] "Entire home/apt" "Entire home/apt" "Entire home/apt" "Entire home/apt" ...
- $ accommodates          : num [1:52088] 14 5 2 10 4 8 5 2 6 10 ...
- $ bedrooms              : num [1:52088] NA NA NA NA NA NA NA NA NA NA ...
- $ beds                  : num [1:52088] 9 4 1 7 3 5 3 3 5 5 ...
- $ number_of_reviews     : num [1:52088] 0 0 124 0 18 0 0 73 0 0 ...
- $ review_scores_rating  : num [1:52088] NA NA 4.88 NA 4.89 NA NA 4.73 NA NA ...
- $ review_scores_value   : num [1:52088] NA NA 4.64 NA 4.83 NA NA 4.64 NA NA ...
- $ host_is_superhost     : logi [1:52088] FALSE FALSE TRUE FALSE FALSE FALSE ...
- $ host_name             : chr [1:52088] "Novasol" "Mallorca Villa Selection" "Juana" "Homerti" ...
- $ neighbourhood_cleansed: chr [1:52088] "Sóller" "Santanyí" "Palma de Mallorca" "Felanitx" ...
-```
-
-
-:::
 :::
 
+
+
+Hemos seleccionado las variables que nos parecen más interesantes y hemos guardado el objeto como `listings_common0_select.RData` en `clean_data/mallorca/`
 
 
 **listings**
 
-Hemos cargado el objeto `listings_common0_select` que contiene los datos de los 4 periodos de apartamentos de inside Airbnb de Mallorca con unas 15 ó 16 variables.
+Hemos cargado el objeto `listings0` que contiene los datos varios  periodos de apartamentos de inside Airbnb de Mallorca seleccionando cuantas variables nos parecen más interesantes.
 
-Notemos que cada apartamento:
-
--   queda identificado por id y por date que nos da el periodo en la que apareció el dato.
--   así que cada apartamento aparece 4 veces ya que hemos elegido solo los apartamentos que aparecen en las 4 muestras.
--   Las muestras son 2023-12-17, 2024-03-23, 2024-06-19, 2024-09-13,
+Separararemos la fecha del scrapping que es eb la que se observon el fichero y nos quedaremos con los apartamentos que aparecen en las 9 periodos scrapeados.
 
 
 
 ::: {.cell}
 
 ```{.r .cell-code}
-unique(listings_common0_select$date)
+listings0= listings0 %>% mutate(date=as.Date(substr(as.character(scrape_id),1,8),
+                                             format="%Y%m%d"),
+                                .after=id)
+```
+:::
+
+
+
+Ahora veamos la fechas de los sceapings y el número de veces que aparecen 
+ cada  apartamentos.
+
+
+
+
+
+::: {.cell}
+
+```{.r .cell-code}
+table(listings0$date)
 ```
 
 ::: {.cell-output .cell-output-stdout}
 
 ```
-[1] "2023-12-17" "2024-03-23" "2024-06-19" "2024-09-13"
+
+2023-12-17 2024-03-23 2024-06-19 2024-09-13 2024-12-14 2025-03-07 2025-06-15 
+      9197       9197       9197       9197       9197       9197       9197 
+2025-09-21 
+      9197 
+```
+
+
+:::
+:::
+
+
+Hay 8 periodos de scrapping y vamos a quedarnos con los apartamentos que aparecen en todos los periodos
+
+
+Vemos que cada apartamento aparece 8 veces una por periodo.
+
+
+
+
+::: {.cell}
+
+```{.r .cell-code}
+table(table(listings0$id))
+```
+
+::: {.cell-output .cell-output-stdout}
+
+```
+
+   8 
+9197 
+```
+
+
+:::
+:::
+
+
+
+
+
+Notemos que cada apartamento:
+
+-   queda identificado por id y por date que nos da el periodo en la que apareció el dato.
+-   así que cada apartamento aparece 8 veces ya que hemos elegido solo los apartamentos que aparecen en las 8 muestras.
+-   Las muestras son 2023-12-17, 2024-03-23, 2024-06-19, 2024-09-13, 2024-12-14, 2025-03-07, 2025-06-15, 2025-09-21,
+
+
+
+::: {.cell}
+
+```{.r .cell-code}
+unique(listings0$date)
+```
+
+::: {.cell-output .cell-output-stdout}
+
+```
+[1] "2023-12-17" "2024-03-23" "2024-06-19" "2024-09-13" "2024-12-14"
+[6] "2025-03-07" "2025-06-15" "2025-09-21"
 ```
 
 
@@ -125,20 +196,20 @@ Estos datos necesitan leerse de forma adecuada, las columnas 1, 2 y 4 deben ser 
 ::: {.cell}
 
 ```{.r .cell-code}
-reviews=read_csv("data/mallorca/2023-12-17/reviews.csv.gz")
+reviews=read_csv("data/mallorca/2025-09-21/reviews.csv.gz")
 str(reviews)
 ```
 
 ::: {.cell-output .cell-output-stdout}
 
 ```
-spc_tbl_ [344,651 × 6] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
- $ listing_id   : num [1:344651] 69998 69998 69998 69998 69998 ...
- $ id           : num [1:344651] 881474 4007103 4170371 4408459 4485779 ...
- $ date         : Date[1:344651], format: "2012-01-24" "2013-04-02" ...
- $ reviewer_id  : num [1:344651] 1595616 3868130 5730759 5921885 810469 ...
- $ reviewer_name: chr [1:344651] "Jean-Pierre" "Jo And Mike" "Elizabeth" "Jone" ...
- $ comments     : chr [1:344651] "This place was charming! Lorenzo himself is a very warm and engaging host and made us feel very welcome. \r<br/"| __truncated__ "We had a four night stay at this gorgeous apartment and it was absolutely perfect. It's really pretty, beautifu"| __truncated__ "Lor's apartment looks exactly like the pictures! It is perfectly located for historic Palma - close to the Cath"| __truncated__ "Wonderful place! 10/10. Charming, spacious and comfortable. Looks even more splendid than in the pictures. The "| __truncated__ ...
+spc_tbl_ [398,782 × 6] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ listing_id   : num [1:398782] 69998 69998 69998 69998 69998 ...
+ $ id           : num [1:398782] 881474 4007103 4170371 4408459 4485779 ...
+ $ date         : Date[1:398782], format: "2012-01-24" "2013-04-02" ...
+ $ reviewer_id  : num [1:398782] 1595616 3868130 5730759 5921885 810469 ...
+ $ reviewer_name: chr [1:398782] "Jean-Pierre" "Jo And Mike" "Elizabeth" "Jone" ...
+ $ comments     : chr [1:398782] "This place was charming! Lorenzo himself is a very warm and engaging host and made us feel very welcome. \r<br/"| __truncated__ "We had a four night stay at this gorgeous apartment and it was absolutely perfect. It's really pretty, beautifu"| __truncated__ "Lor's apartment looks exactly like the pictures! It is perfectly located for historic Palma - close to the Cath"| __truncated__ "Wonderful place! 10/10. Charming, spacious and comfortable. Looks even more splendid than in the pictures. The "| __truncated__ ...
  - attr(*, "spec")=
   .. cols(
   ..   listing_id = col_double(),
@@ -187,7 +258,7 @@ Son dos columnas y la primera es una agrupación de municipios (están NA) y la 
 ::: {.cell}
 
 ```{.r .cell-code}
-municipios=read_csv("data/mallorca/2023-12-17/neighbourhoods.csv")
+municipios=read_csv("data/mallorca/2025-09-21/neighbourhoods.csv")
 str(municipios)
 ```
 
@@ -245,14 +316,14 @@ library(sf)
 library(tmap)
 
 # Leer el archivo GeoJSON
-geojson_sf <- sf::st_read("data/mallorca/2024-09-13/neighbourhoods.geojson")
+geojson_sf <- sf::st_read("data/mallorca/2025-09-21/neighbourhoods.geojson")
 ```
 
 ::: {.cell-output .cell-output-stdout}
 
 ```
 Reading layer `neighbourhoods' from data source 
-  `C:\Users\ricuib\Documents\Docencia_25_26\MAT3GIN\taller_AIRBNB\tallerMat3_25_26\data\mallorca\2024-09-13\neighbourhoods.geojson' 
+  `C:\Users\ricuib\Documents\Docencia_25_26\MAT3GIN\taller_AIRBNB\tallerMat3_25_26\data\mallorca\2025-09-21\neighbourhoods.geojson' 
   using driver `GeoJSON'
 Simple feature collection with 53 features and 2 fields
 Geometry type: MULTIPOLYGON
@@ -275,7 +346,7 @@ tm_shape(geojson_sf) +
 ```
 
 ::: {.cell-output-display}
-![](ENUNCIADO_taller_EVALUABLE_ABB_files/figure-html/unnamed-chunk-5-1.png){width=672}
+![](ENUNCIADO_taller_EVALUABLE_ABB_files/figure-html/unnamed-chunk-8-1.png){width=672}
 :::
 :::
 
@@ -287,7 +358,7 @@ Responder las siguientes preguntas con formato Rmarkdown (.Rmd) o quarto (.qmd) 
 
 ## Pregunta 1 (**1punto**)
 
-Del fichero con los datos de listings `listing_common0_select.RData` calcula los estadísticos descriptivos de las variable `price` y de la variable `number_of_reviews` agrupados por municipio y por periodo.
+Del fichero con los datos de listings `listings0` calcula los estadísticos descriptivos de las variable `price` y de la variable `number_of_reviews` agrupados por municipio y por periodo.
 
 Presenta los resultados con una tabla de kableExtra.
 
@@ -299,23 +370,66 @@ Pollença
 
 ## Pregunta 3 (**1punto**)
 
-Con los datos de `listings_common0_select` de todos los periodos, contrastar si la media del precio en Pollença es igual a la de Palma **contra** que es mayor que en Palma para los precios mayores que 50 euros y menores de 400. Construid la hipótesis nula y alternativa, calculad el $p$-valor y el intervalo de confianza asociado al contraste. Justifica técnicamente la conclusión del contraste.
+Con los datos de `listings0` de todos los periodos, contrastar si la media del precio en Alcudia es igual a la de Palma **contra** que es mayor que en Palma para los precios mayores que 50 euros y menores de 400. Construid la hipótesis nula y alternativa, calculad el $p$-valor y el intervalo de confianza asociado al contraste. Justifica técnicamente la conclusión del contraste.
 
 ## Pregunta 4 (**1punto**)
 
-Con los  datos de `listings_common0_select`, contrastar si las medias de los precios en Palma entre los periodos "2023-12-17" y "2024-03-23" son iguales contra que son menores en 2023. Construid la hipótesis nula y alternativa, calculad el $p$-valor y el intervalo de confianza asociado al contraste. Haced un diagrama de caja comparativo de los precios ~~por municipio~~  por periodo y coméntalo.
+Con los  datos de `listings0`, contrastar si las medias de los precios en Alcudia entre los periodos  2025-06-15 y   2025-09-21 son iguales contra que son menores en 2023. Construid la hipótesis nula y alternativa, calculad el $p$-valor y el intervalo de confianza asociado al contraste.
 
-## Pregunta 5 (**1punto**)
+Haced un diagrama de caja comparativo de los precios  en Alcudia  por periodo y coméntalo.
 
-Calcular la proporción de apartamentos de la muestra "2024-03-23" con media de valoración `review_scores_rating` mayor que 4 en Palma y en Pollença son iguales contra que son distintas. Construid un intervalo de confianza para la diferencia de proporciones.
+## Pregunta 5 (**1 punto**)
 
-## Pregunta 6 (**1punto**)
+Comparar con un bopxlot de las valoraciones medias `review_scores_rating` para Alcudia, Palma, Calvià y
+Pollença. Hacer el gráfico con ggplot2 y todo lujo de destalles.
 
-Calcular la proporción de apartamentos de los periodos "2023-12-17" y "2024-03-23" con media de valoración `review_scores_rating` mayor que 4 en Palma  ~~y en Pollença~~ son iguales contra que son distintas.
+
+## Pregunta 6 (**1 punto**)
+
+Calcular la proporción de apartamentos de la muestra "2025-09-21" con media de valoración `review_scores_rating` mayor que 4 en Alcudia y en Calvià son iguales contra que son distintas. Construid un intervalo de confianza para la diferencia de proporciones.
+
 
 ## Pregunta 7 (**1punto**)
 
-La [Zipf's law es una ley empírica](https://en.wikipedia.org/wiki/Zipf%27s_law#Word_frequencies_in_natural_languages) que dice que la frecuencia de las palabras en un texto es inversamente proporcional a su rango. Decidid si la ley se ajusta a los datos de la longitud de los comentarios de los apartamentos de la muestra "2023-12-17" de Palma. Para ello, haced un análisis de regresión lineal de la frecuencia de las longitudes de los comentarios de los apartamentos de Palma y el rango de las longitudes de los comentarios. Justificad la respuesta, estadísticamente y gráficamente.
+Calcular la proporción de apartamentos de los periodos 2025-06-15 y  2025-09-21  con media de valoración `review_scores_rating` mayor que 4 en Palma  y en Pollença son iguales contra que son distintas.
+
+### Pregunta 7 
+Agrupa las variables `review_scores_rating` y `review_scores_location` de `listings0` en 5 categorías cada una y construid una tabla de contingencia con las dos variables agrupadas. Agrupar de forma que no cruces de categorías vacías. Contratar si esta varibles son independientes con  un test $\chi^2$. 
+
+Buscan información sobre el coeficiente de contingencia de Carl Pearson, cacularlo desde  la salida de chisq.test interpretarlo  en esta caso
+
+
+
+
+::: {.cell}
+
+```{.r .cell-code}
+table(cut(listings0$review_scores_rating,5),
+      cut(listings0$review_scores_location,5))
+```
+
+::: {.cell-output .cell-output-stdout}
+
+```
+             
+              (0.996,1.8] (1.8,2.6] (2.6,3.4] (3.4,4.2] (4.2,5]
+  (0.996,1.8]          17         8         6        10       2
+  (1.8,2.6]             8        11        12        30      34
+  (2.6,3.4]             8        20        59       125     168
+  (3.4,4.2]             0         0       105      1217    2905
+  (4.2,5]               0         9        93      2313   57567
+```
+
+
+:::
+:::
+
+
+
+
+## Pregunta 8 (**2 puntos**)
+
+La [Zipf's law es una ley empírica](https://en.wikipedia.org/wiki/Zipf%27s_law#Word_frequencies_in_natural_languages) que dice que la frecuencia de las palabras en un texto es inversamente proporcional a su rango. Decidid si la ley se ajusta a los datos de la longitud de los comentarios de los apartamentos de la muestra "2025-09-21" Mallorca, haced lo mismo para description de `listings0`. Para ello, haced un análisis de regresión lineal de la frecuencia de las longitudes de los comentarios/descripciones de los apartamentos de Mallorca y el rango de las longitudes de los comentarios. Justificad la respuesta, estadísticamente y gráficamente.
 
 Como ayuda estudiar el siguiente código, utilizadlo y comentadlo.
 
@@ -325,6 +439,7 @@ Como ayuda estudiar el siguiente código, utilizadlo y comentadlo.
 
 ```{.r .cell-code}
 library(stringr)
+# para las reseñas
 head(reviews)
 ```
 
@@ -347,20 +462,29 @@ head(reviews)
 
 ```{.r .cell-code}
 length_rewiews=stringr::str_count(reviews$comments,"\\w+")
-head(table(length_rewiews))
+barplot(table(length_rewiews))
 ```
 
-::: {.cell-output .cell-output-stdout}
+::: {.cell-output-display}
+![](ENUNCIADO_taller_EVALUABLE_ABB_files/figure-html/unnamed-chunk-10-1.png){width=672}
+:::
 
+```{.r .cell-code}
+#para las descripciones
+length_description=stringr::str_count(listings0$description,"\\w+")
+barplot(table(length_description))
 ```
-length_rewiews
-   0    1    2    3    4    5 
-1138 2569 5601 3348 4331 4924 
-```
 
-
+::: {.cell-output-display}
+![](ENUNCIADO_taller_EVALUABLE_ABB_files/figure-html/unnamed-chunk-10-2.png){width=672}
 :::
 :::
+
+
+
+Y ahora se calculan los rango os lo dejo para reviews par desctption lo haceís vosotros
+
+
 
 ::: {.cell}
 
@@ -374,7 +498,7 @@ head(aux)
 ```
 length_rewiews
    0    1    2    3    4    5 
-1138 2569 5601 3348 4331 4924 
+1418 3444 7045 4221 5165 5776 
 ```
 
 
@@ -402,12 +526,12 @@ str(tbl)
 ::: {.cell-output .cell-output-stdout}
 
 ```
-tibble [626 × 5] (S3: tbl_df/tbl/data.frame)
- $ L       : num [1:626] 0 1 2 3 4 5 6 7 8 9 ...
- $ Freq    : num [1:626] 1138 2569 5601 3348 4331 ...
- $ Rank    : num [1:626] 1 2 3 4 5 6 7 8 9 10 ...
- $ Log_Freq: num [1:626] 7.04 7.85 8.63 8.12 8.37 ...
- $ Log_Rank: num [1:626] 0 0.693 1.099 1.386 1.609 ...
+tibble [592 × 5] (S3: tbl_df/tbl/data.frame)
+ $ L       : num [1:592] 0 1 2 3 4 5 6 7 8 9 ...
+ $ Freq    : num [1:592] 1418 3444 7045 4221 5165 ...
+ $ Rank    : num [1:592] 1 2 3 4 5 6 7 8 9 10 ...
+ $ Log_Freq: num [1:592] 7.26 8.14 8.86 8.35 8.55 ...
+ $ Log_Rank: num [1:592] 0 0.693 1.099 1.386 1.609 ...
 ```
 
 
@@ -430,19 +554,19 @@ Call:
 lm(formula = tbl2$Freq ~ tbl2$Rank)
 
 Residuals:
-   Min     1Q Median     3Q    Max 
--873.9 -663.3 -175.3  368.6 3533.5 
+    Min      1Q  Median      3Q     Max 
+-1031.8  -786.9  -201.4   452.6  4046.6 
 
 Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept) 1768.652     71.864   24.61   <2e-16 ***
-tbl2$Rank     -4.014      0.197  -20.37   <2e-16 ***
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 2141.9530    85.2279   25.13   <2e-16 ***
+tbl2$Rank     -5.1260     0.2469  -20.76   <2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 869.5 on 614 degrees of freedom
-Multiple R-squared:  0.4033,	Adjusted R-squared:  0.4024 
-F-statistic: 415.1 on 1 and 614 DF,  p-value: < 2.2e-16
+Residual standard error: 1001 on 580 degrees of freedom
+Multiple R-squared:  0.4263,	Adjusted R-squared:  0.4253 
+F-statistic: 430.9 on 1 and 580 DF,  p-value: < 2.2e-16
 ```
 
 
@@ -462,18 +586,18 @@ lm(formula = tbl2$Freq ~ tbl2$Log_Rank)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--809.74 -473.62    4.57  383.09 1562.70 
+-896.17 -547.03    7.73  443.85 1629.79 
 
 Coefficients:
               Estimate Std. Error t value Pr(>|t|)    
-(Intercept)    6969.44     141.50   49.26   <2e-16 ***
-tbl2$Log_Rank -1175.92      25.39  -46.32   <2e-16 ***
+(Intercept)    8267.68     162.94   50.74   <2e-16 ***
+tbl2$Log_Rank -1405.73      29.51  -47.63   <2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 530.9 on 614 degrees of freedom
-Multiple R-squared:  0.7775,	Adjusted R-squared:  0.7772 
-F-statistic:  2146 on 1 and 614 DF,  p-value: < 2.2e-16
+Residual standard error: 596.2 on 580 degrees of freedom
+Multiple R-squared:  0.7964,	Adjusted R-squared:  0.796 
+F-statistic:  2269 on 1 and 580 DF,  p-value: < 2.2e-16
 ```
 
 
@@ -493,18 +617,18 @@ lm(formula = tbl2$Log_Freq ~ tbl2$Log_Rank)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--4.1149 -0.4810  0.0715  0.5346  1.2697 
+-4.3152 -0.5008  0.0081  0.5191  1.6510 
 
 Coefficients:
               Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   19.85286    0.20769   95.59   <2e-16 ***
-tbl2$Log_Rank -3.00352    0.03726  -80.61   <2e-16 ***
+(Intercept)   20.58666    0.24105   85.40   <2e-16 ***
+tbl2$Log_Rank -3.15950    0.04366  -72.36   <2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 0.7793 on 614 degrees of freedom
-Multiple R-squared:  0.9137,	Adjusted R-squared:  0.9135 
-F-statistic:  6497 on 1 and 614 DF,  p-value: < 2.2e-16
+Residual standard error: 0.882 on 580 degrees of freedom
+Multiple R-squared:  0.9003,	Adjusted R-squared:  0.9001 
+F-statistic:  5237 on 1 and 580 DF,  p-value: < 2.2e-16
 ```
 
 
